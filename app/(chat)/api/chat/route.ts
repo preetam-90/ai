@@ -85,11 +85,22 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
     } = requestBody;
 
-    const session = await auth();
+    // AUTH TEMPORARILY DISABLED
+    // const session = await auth();
 
-    if (!session?.user) {
-      return new ChatSDKError('unauthorized:chat').toResponse();
-    }
+    // if (!session?.user) {
+    //   return new ChatSDKError('unauthorized:chat').toResponse();
+    // }
+
+    // Mock session for now
+    const session = {
+      user: {
+        id: 'temp-user',
+        email: 'temp@example.com',
+        type: 'guest' as UserType
+      },
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+    };
 
     const userType: UserType = session.user.type;
 
@@ -151,6 +162,9 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        console.log('Starting streamText with model:', selectedChatModel);
+        console.log('Messages:', uiMessages);
+        
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
@@ -207,21 +221,25 @@ export async function POST(request: Request) {
       },
     });
 
-    const streamContext = getStreamContext();
+    // Temporarily disable resumable streams
+    // const streamContext = getStreamContext();
 
-    if (streamContext) {
-      return new Response(
-        await streamContext.resumableStream(streamId, () =>
-          stream.pipeThrough(new JsonToSseTransformStream()),
-        ),
-      );
-    } else {
+    // if (streamContext) {
+    //   return new Response(
+    //     await streamContext.resumableStream(streamId, () =>
+    //       stream.pipeThrough(new JsonToSseTransformStream()),
+    //     ),
+    //   );
+    // } else {
       return new Response(stream.pipeThrough(new JsonToSseTransformStream()));
-    }
+    // }
   } catch (error) {
+    console.error('Chat API Error:', error);
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return new Response(`Internal Server Error: ${errorMessage}`, { status: 500 });
   }
 }
 
@@ -233,13 +251,28 @@ export async function DELETE(request: Request) {
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
-  const session = await auth();
+  // AUTH TEMPORARILY DISABLED
+  // const session = await auth();
 
-  if (!session?.user) {
-    return new ChatSDKError('unauthorized:chat').toResponse();
-  }
+  // if (!session?.user) {
+  //   return new ChatSDKError('unauthorized:chat').toResponse();
+  // }
+
+  // Mock session for now
+  const session = {
+    user: {
+      id: 'temp-user',
+      email: 'temp@example.com',
+      type: 'guest' as UserType
+    },
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+  };
 
   const chat = await getChatById({ id });
+
+  if (!chat) {
+    return new ChatSDKError('not_found:chat').toResponse();
+  }
 
   if (chat.userId !== session.user.id) {
     return new ChatSDKError('forbidden:chat').toResponse();

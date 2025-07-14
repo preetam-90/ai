@@ -41,3 +41,10 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /playwright/*
+
+# Backup files
+*.backup
+*.original
+
+# Docker
+docker-compose.yml

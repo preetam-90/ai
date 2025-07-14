@@ -11,7 +11,14 @@ import { convertToUIMessages } from '@/lib/utils';
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
-  const chat = await getChatById({ id });
+  
+  let chat;
+  try {
+    chat = await getChatById({ id });
+  } catch (error) {
+    // If there's a database error or the chat doesn't exist, show not found
+    notFound();
+  }
 
   if (!chat) {
     notFound();
@@ -33,9 +40,15 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     }
   }
 
-  const messagesFromDb = await getMessagesByChatId({
-    id,
-  });
+  let messagesFromDb;
+  try {
+    messagesFromDb = await getMessagesByChatId({
+      id,
+    });
+  } catch (error) {
+    // If there's a database error getting messages, show not found
+    notFound();
+  }
 
   const uiMessages = convertToUIMessages(messagesFromDb);
 

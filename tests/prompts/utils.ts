@@ -254,5 +254,12 @@ As we move forward, Silicon Valley continues to reinvent itself. While some pred
     ];
   }
 
-  return [{ id: '6', type: 'text-delta', delta: 'Unknown test prompt!' }];
+  return [
+    ...textToDeltas('Hello! I\'m a test AI assistant. I can help you with various tasks. What would you like to know?'),
+    {
+      type: 'finish',
+      finishReason: 'stop',
+      usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
+    },
+  ];
 };

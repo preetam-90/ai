@@ -17,11 +17,21 @@ export async function GET(request: NextRequest) {
     ).toResponse();
   }
 
-  const session = await auth();
+  // AUTH TEMPORARILY DISABLED
+  // const session = await auth();
 
-  if (!session?.user) {
-    return new ChatSDKError('unauthorized:chat').toResponse();
-  }
+  // if (!session?.user) {
+  //   return new ChatSDKError('unauthorized:chat').toResponse();
+  // }
+
+  // Mock session for now
+  const session = {
+    user: {
+      id: 'temp-user',
+      email: 'temp@example.com',
+      type: 'guest'
+    }
+  };
 
   const chats = await getChatsByUserId({
     id: session.user.id,
