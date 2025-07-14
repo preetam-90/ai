@@ -24,7 +24,8 @@ export default function Page() {
     },
   );
 
-  const { update: updateSession } = useSession();
+  const session = useSession();
+  const updateSession = session?.update || (() => {});
 
   useEffect(() => {
     if (state.status === 'user_exists') {
@@ -40,7 +41,9 @@ export default function Page() {
       toast({ type: 'success', description: 'Account created successfully!' });
 
       setIsSuccessful(true);
-      updateSession();
+      if (typeof updateSession === 'function') {
+        updateSession();
+      }
       router.refresh();
     }
   }, [state, router, updateSession]);

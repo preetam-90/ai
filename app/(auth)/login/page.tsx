@@ -24,7 +24,8 @@ export default function Page() {
     },
   );
 
-  const { update: updateSession } = useSession();
+  const session = useSession();
+  const updateSession = session?.update || (() => {});
 
   useEffect(() => {
     if (state.status === 'failed') {
@@ -39,7 +40,9 @@ export default function Page() {
       });
     } else if (state.status === 'success') {
       setIsSuccessful(true);
-      updateSession();
+      if (typeof updateSession === 'function') {
+        updateSession();
+      }
       router.refresh();
     }
   }, [state.status, router, updateSession]);
